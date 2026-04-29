@@ -1,0 +1,78 @@
+semantic_models:
+  - name: orders
+    description: |
+      Order-level data. Grain is one row per order.
+      Primary source for revenue and order volume metrics.
+    model: ref('orders')
+    defaults:
+      agg_time_dimension: ordered_at
+
+    entities:
+      - name: order_id
+        type: primary
+      - name: customer_id
+        type: foreign
+        expr: customer_id
+
+    dimensions:
+      - name: ordered_at
+        type: time
+        type_params:
+          time_granularity: day
+      - name: order_status
+        type: categorical
+      - name: region
+        type: categorical
+        expr: customer_region
+      - name: channel
+        type: categorical
+        description: Acquisition channel for this order
+
+    measures:
+      - name: order_total
+        description: Total value of the order including tax
+        agg: sum
+        expr: order_total
+      - name: order_count
+        description: Count of orders placed
+        agg: count_distinct
+        expr: order_id
+      - name: order_cost
+        description: Cost of goods for this order
+        agg: sum
+        expr: order_cost
+
+  - name: customers
+    description: |
+      Customer-level data. Grain is one row per customer.
+      Used for customer count and churn metrics.
+    model: ref('customers')
+    defaults:
+      agg_time_dimension: first_order_at
+
+    entities:
+      - name: customer_id
+        type: primary
+
+    dimensions:
+      - name: first_order_at
+        type: time
+        type_params:
+          time_granularity: day
+      - name: customer_status
+        type: categorical
+      - name: region
+        type: categorical
+      - name: plan_tier
+        type: categorical
+        description: Subscription plan tier (free, starter, pro, enterprise)
+
+    measures:
+      - name: customer_count
+        description: Count of distinct customers
+        agg: count_distinct
+        expr: customer_id
+      - name: churned_customer_count
+        description: Count of customers who churned in the period
+        agg: count_distinct
+        expr: "CASE WHEN customer_status = 'churned' THEN customer_id END"

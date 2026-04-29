@@ -1,0 +1,31 @@
+version: 1
+
+# Default policy when no rule matches a metric
+# Options: allow | deny
+# For most orgs: start with 'allow', tighten over time
+default_policy: allow
+
+rules:
+  # Revenue: restricted to finance and admin
+  # Analysts can see it but cannot slice by internal_cost_center
+  - metric: revenue
+    access_level: restricted
+    allowed_roles: [finance, analyst, admin]
+    masked_dimensions:
+      - role: analyst
+        dimensions: [internal_cost_center]
+
+  # Gross profit: confidential — explicit user allowlist only
+  - metric: gross_profit
+    access_level: confidential
+    allowed_users: [cfo@jaffle.com, vp_finance@jaffle.com]
+
+  # Churn rate: available to cs_team, analyst, admin
+  - metric: churn_rate
+    access_level: restricted
+    allowed_roles: [cs_team, analyst, admin, finance]
+
+  # Average order value: open to all authenticated users
+  - metric: average_order_value
+    access_level: public
+    allowed_roles: [analyst, finance, cs_team, admin, marketing]

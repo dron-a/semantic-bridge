@@ -10,6 +10,11 @@ Public API:
   Access:       AccessController
 """
 
+# Semantic Metrics Protocol version
+# Increment this only when protocol contracts change
+# Not when semantic-bridge implementation changes
+SMP_VERSION = "0.1.0"
+
 from .models import (
     AccessDecision,
     AccessLevel,
